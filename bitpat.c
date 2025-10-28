@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "ternary.h"
 
 bool bitpat_match_s(uint16_t t, const char* s){
     int idx = 0;

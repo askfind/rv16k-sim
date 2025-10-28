@@ -6,11 +6,12 @@
 
 #include "log.h"
 #include "elf.h"
-#include "cpu.h"
+#include "cpu_trit.h"
+#include "ternary.h"
 
 //#define DEBUG
 
-void elf_parse(struct cpu *c, char* file_name){
+void elf_parse(struct cpu_trit *c, char* file_name){
     struct stat st;
     FILE *fp;
     int file_size;
@@ -75,9 +76,10 @@ void elf_parse(struct cpu *c, char* file_name){
                 assert(j + 1 < INST_ROM_SIZE && "Too large program (.text) data.");
 
                 log_printf("ROM: %04X %02X%02X\n", j, obj[j], obj[j+1]);
-                c->inst_rom[j] = obj[j];
-                c->inst_rom[j+1] = obj[j+1];
-            }
+                
+				uint8_to_trits(&c->inst_rom[j], obj[j]);
+				uint8_to_trits(&c->inst_rom[j+1],obj[j+1]);
+			}	
             log_printf("\n");
         }
         else if (0x00010000 <= Shdr[i].sh_addr && Shdr[i].sh_addr <= 0x0001ffff) {  // RAM
@@ -94,14 +96,23 @@ void elf_parse(struct cpu *c, char* file_name){
                 assert(data_ram_offset + j + 1 < DATA_RAM_SIZE && "Too large data (.data/.rodata).");
 
                 log_printf("RAM: %04X %02X%02X\n", data_ram_offset + j, obj[j], obj[j+1]);
-                c->data_ram[data_ram_offset+ j] = obj[j];
-                c->data_ram[data_ram_offset+ j+1] = obj[j+1];
+                
+               	uint8_to_trits(&c->data_ram[data_ram_offset+ j], obj[j]);                
+				uint8_to_trits(&c->data_ram[data_ram_offset+ j+1], obj[j+1]);
             }
             log_printf("\n");
         }
     }
 
     // Since RV16K specification says the initial value of PC is 0, e_entry should be 0.
-    c->pc = Ehdr->e_entry;
-    assert(c->pc == 0 && "The entry point of the program should be address 0.");
+    for(int k=0;k<TRIT16_SIZE;k++) {
+		c->pc.t[k] = sign(Ehdr->e_entry & (1<<k));
+	}	
+    
+    uint16_t pc = 0;
+    for(int k=0;k<TRIT16_SIZE;k++) {
+		pc |= sign(c->pc.t[k] & (1<<k));
+	} 
+    assert(pc == 0 && "The entry point of the program should be address 0.");
 }
+
