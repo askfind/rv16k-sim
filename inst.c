@@ -3,12 +3,12 @@
 #include <stdint.h>
 
 #include "cpu_trit.h"
-#include "ternary.h"
 #include "bitpat.h"
 #include "inst.h"
+#include "inst_trit.h"
 #include "log.h"
 
-int flag_inst_trits = 0;
+extern int flag_inst_trits;
 
 /* -------------------------------------------------
 *  Реализация инструкций для двоичного режима RISC-V
@@ -66,14 +66,14 @@ void mem_write_w(struct cpu_trit *c, uint16_t addr, uint16_t data){
     log_printf("DataRam[0x%04X] => 0x%04X ", addr, data&0xFF);
     log_printf("DataRam[0x%04X] => 0x%04X ", addr+1, data>>8);
 
-    assert(addr < DATA_RAM_SIZE - 1 && "RAM write to invalid address!");
+    assert(addr < DATA_RAM_SIZE && "RAM write to invalid address!");
     
     uint8_to_trits(&c->data_ram[addr], data&0xFF);
     uint8_to_trits(&c->data_ram[addr+1], data>>8);
 }
 
 uint8_t mem_read_b(struct cpu_trit *c, uint16_t addr){
-    assert(addr < DATA_RAM_SIZE && "RAM read from invalid address!");
+    assert(addr < DATA_RAM_SIZE - 1 && "RAM read from invalid address!");
     return trits_to_uint8(&c->data_ram[addr]);
 }
 
@@ -93,6 +93,9 @@ uint16_t rom_read_w(struct cpu_trit *c){
     return r;
 }
 
+/*
+ * Выделить биты [s...e]
+ */ 
 uint16_t get_bits(uint16_t t, int s, int e){
     int bit_len = e-s;
     uint32_t bit_mask = 1;
@@ -213,6 +216,104 @@ void inst_lb(struct cpu_trit *c, uint16_t inst){
     pc_update(c, 2);
 }
 
+void inst_lh(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: LH\t"); 
+} 
+
+void inst_lhu(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: LHU\t"); 
+} 
+
+void inst_slti(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SLTI\t"); 
+} 
+
+void inst_sltiu(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SLTIU\t"); 
+} 
+
+void inst_xori(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: XORI\t"); 
+} 
+
+void inst_srli(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SRLI\t"); 
+} 
+
+void inst_srai(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SRAI\t"); 
+} 
+
+void inst_ori(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SORI\t"); 
+} 
+
+void inst_andi(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SANDI\t"); 
+} 
+
+void inst_auipc(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SAUIPC\t"); 
+} 
+
+void inst_sh(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SH\t"); 
+} 
+
+void inst_sll(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SLL\t"); 
+} 
+
+void inst_slt(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SLT\t"); 
+} 
+
+void inst_sltu(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SLTU\t"); 
+} 
+
+void inst_srl(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SRL\t"); 
+} 
+
+void inst_sra(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SRA\t"); 
+} 
+
+void inst_lui(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: LUI\t"); 
+} 
+
+void inst_beq(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: BEQ\t"); 
+} 
+
+void inst_bne(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: BNE\t"); 
+} 
+
+void inst_blt(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: BLT\t"); 
+} 
+
+void inst_bge(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: BGE\t"); 
+} 
+
+void inst_bltu(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: BLTU\t"); 
+} 
+
+void inst_bgeu(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: BGEU\t"); 
+} 
+
+void inst_slli(struct cpu_trit *c, uint16_t inst){
+    log_printf("Inst: SLLI\t"); 
+} 
+
+
+ 
 void inst_sw(struct cpu_trit *c, uint16_t inst){
     log_printf("Inst: SW\t");
 
@@ -673,169 +774,46 @@ void inst_nop(struct cpu_trit *c, uint16_t inst){
     pc_update(c, 2);
 }
 
-
-/* ------------------------------------------------------
-*  Реализация инструкции для троичного режима TRIT-RISC-V
+/* ---------------------------------------------
+*  Инструкции для двоичного RISC-V RV32E / RV32I
 */
-
-//TODO 27.10.2025  Добавить реалищацию Функции режима работы троичного TRIT-RISC-V 
-
-void trs_pc_update(struct cpu_trit *c, uint16_t offset) {}
-void trs_write(struct cpu_trit *c, uint16_t addr) {}
-uint16_t trs_pc_read(struct cpu_trit *c) {return 0;}
-void trs_reg_write(struct cpu_trit *c, uint8_t reg_idx, uint16_t data) {}
-uint16_t trs_reg_read(struct cpu_trit *c, uint8_t reg_idx) {return 0;}
-void trs_mem_write_b(struct cpu_trit *c, uint16_t addr, uint8_t data) {}
-void trs_mem_write_w(struct cpu_trit *c, uint16_t addr, uint16_t data) {}
-uint8_t trs_mem_read_b(struct cpu_trit *c, uint16_t addr) {return 0;}
-uint16_t trs_mem_read_w(struct cpu_trit *c, uint16_t addr) {return 0;}
-uint16_t trs_rom_read_w(struct cpu_trit *c) {return 0;}
-uint16_t trs_get_bits(uint16_t t, int s, int e) {return 0;}
-uint16_t trs_sign_ext(uint16_t t, uint8_t sign_bit) {return 0;}
-uint8_t trs_flag_zero(uint16_t res) {return 0;}
-uint8_t trs_flag_sign(uint16_t res) {return 0;}
-uint8_t trs_flag_overflow(uint16_t s1, uint16_t s2, uint16_t res) {return 0;}
-void inst_trs_lw(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_lwsp(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_lbu(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_lb(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_sw(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_swsp(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_sb(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_mov(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_add(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_sub(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_and(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_or(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_xor(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_lsl(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_lsr(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_asr(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_cmp(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_li(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_addi(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_cmpi(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_j(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jal(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jalr(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jr(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jl(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jle(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_je(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jne(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jb(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_jbe(struct cpu_trit *c, uint16_t inst) {}
-void inst_trs_nop(struct cpu_trit *c, uint16_t inst) {}
-
-
-/* -----------------------------------
-*  Инструкции для двоичного RISC-V и
-*  троичного TRIT-RISC-V режима работы 
-*/
-const struct inst_data inst_list[] = {
-
-#if 1 //viv+ TODO add instructions RISC-V RV16 and TRIT-RISC-V RV16-TRIT
-	
-	/* Инструкции бинарного режима RISC-V */
-    {"0b+0++_00+0_xxxx_xxxx", inst_lw},   //LW
-    {"0b+0+0_xxxx_xxxx_xxxx", inst_lwsp}, //LWSP
-    {"0b+0++_+0+0_xxxx_xxxx", inst_lbu},  //LBU
-    {"0b+0++_+++0_xxxx_xxxx", inst_lb},   //LB
-    {"0b+00+_00+0_xxxx_xxxx", inst_sw},   //SW
-    {"0b+000_xxxx_xxxx_xxxx", inst_swsp}, //SWSP
-    {"0b+00+_+0+0_xxxx_xxxx", inst_sb},   //SB
-    {"0b+++0_0000_xxxx_xxxx", inst_mov},  //MOV
-    {"0b+++0_00+0_xxxx_xxxx", inst_add},  //ADD
-    {"0b+++0_00++_xxxx_xxxx", inst_sub},  //SUB
-    {"0b+++0_0+00_xxxx_xxxx", inst_and},  //AND
-    {"0b+++0_0+0+_xxxx_xxxx", inst_or},   //OR
-    {"0b+++0_0++0_xxxx_xxxx", inst_xor},  //XOR
-    {"0b+++0_+00+_xxxx_xxxx", inst_lsl},  //LSL
-    {"0b+++0_+0+0_xxxx_xxxx", inst_lsr},  //LSR
-    {"0b+++0_++0+_xxxx_xxxx", inst_asr},  //ASR
-    {"0b++00_00++_xxxx_xxxx", inst_cmp},  //CMP
-    {"0b0+++_+000_xxxx_xxxx", inst_li},   //LI
-    {"0b++++_00+0_xxxx_xxxx", inst_addi}, //ADDI
-    {"0b++0+_00++_xxxx_xxxx", inst_cmpi}, //CMPI
-    {"0b0+0+_00+0_0000_0000", inst_j},    //J
-    {"0b0+++_00++_0000_0000", inst_jal},  //JAL
-    {"0b0++0_000+_xxxx_0000", inst_jalr}, //JALR
-    {"0b0+00_0000_xxxx_0000", inst_jr},   //JR
-    {"0b0+00_0+00_0xxx_xxxx", inst_jl},   //JL
-    {"0b0+00_0+00_+xxx_xxxx", inst_jle},  //JLE
-    {"0b0+00_0+0+_0xxx_xxxx", inst_je},   //JE
-    {"0b0+00_0+0+_+xxx_xxxx", inst_jne},  //JNE
-    {"0b0+00_0++0_0xxx_xxxx", inst_jb},   //JB
-    {"0b0+00_0++0_+xxx_xxxx", inst_jbe},  //JBE
-    {"0b0000_0000_0000_0000", inst_nop},  //NOP
-
-	/* Инструкции троичного режима RISC-V */
-    {"0t-0--_00-0_xxxx_xxxx", inst_trs_lw},   //tLW
-    {"0t-0-0_xxxx_xxxx_xxxx", inst_trs_lwsp}, //tLWSP
-    {"0t-0--_-0-0_xxxx_xxxx", inst_trs_lbu},  //tLBU
-    {"0t-0--_---0_xxxx_xxxx", inst_trs_lb},   //tLB
-    {"0t-00-_00-0_xxxx_xxxx", inst_trs_sw},   //tSW
-    {"0t-000_xxxx_xxxx_xxxx", inst_trs_swsp}, //tSWSP
-    {"0t-00-_-0-0_xxxx_xxxx", inst_trs_sb},   //tSB
-    {"0t---0_0000_xxxx_xxxx", inst_trs_mov},  //tMOV
-    {"0t---0_00-0_xxxx_xxxx", inst_trs_add},  //tADD
-    {"0t---0_00--_xxxx_xxxx", inst_trs_sub},  //tSUB
-    {"0t---0_0-00_xxxx_xxxx", inst_trs_and},  //tAND
-    {"0t---0_0-0-_xxxx_xxxx", inst_trs_or},   //tOR
-    {"0t---0_0--0_xxxx_xxxx", inst_trs_xor},  //tXOR
-    {"0t---0_-00-_xxxx_xxxx", inst_trs_lsl},  //tLSL
-    {"0t---0_-0-0_xxxx_xxxx", inst_trs_lsr},  //tLSR
-    {"0t---0_--0-_xxxx_xxxx", inst_trs_asr},  //tASR
-    {"0t--00_00--_xxxx_xxxx", inst_trs_cmp},  //tCMP
-    {"0t0---_-000_xxxx_xxxx", inst_trs_li},   //tLI
-    {"0t----_00-0_xxxx_xxxx", inst_trs_addi}, //tADDI
-    {"0t--0-_00--_xxxx_xxxx", inst_trs_cmpi}, //tCMPI
-    {"0t0-0-_00-0_0000_0000", inst_trs_j},    //tJ
-    {"0t0---_00--_0000_0000", inst_trs_jal},  //tJAL
-    {"0t0--0_000-_xxxx_0000", inst_trs_jalr}, //tJALR
-    {"0t0-00_0000_xxxx_0000", inst_trs_jr},   //tJR
-    {"0t0-00_0-00_0xxx_xxxx", inst_trs_jl},   //tJL
-    {"0t0-00_0-00_-xxx_xxxx", inst_trs_jle},  //tJLE
-    {"0t0-00_0-0-_0xxx_xxxx", inst_trs_je},   //tJE
-    {"0t0-00_0-0-_-xxx_xxxx", inst_trs_jne},  //tJNE
-    {"0t0-00_0--0_0xxx_xxxx", inst_trs_jb},   //tJB
-    {"0t0-00_0--0_-xxx_xxxx", inst_trs_jbe},  //tJBE
-
-#else
-
-    {"0b1011_0010_xxxx_xxxx", inst_lw},   //LW
-    {"0b1010_xxxx_xxxx_xxxx", inst_lwsp}, //LWSP
-    {"0b1011_1010_xxxx_xxxx", inst_lbu},  //LBU
-    {"0b1011_1110_xxxx_xxxx", inst_lb},   //LB
-    {"0b1001_0010_xxxx_xxxx", inst_sw},   //SW
-    {"0b1000_xxxx_xxxx_xxxx", inst_swsp}, //SWSP
-    {"0b1001_1010_xxxx_xxxx", inst_sb},   //SB
-    {"0b1110_0000_xxxx_xxxx", inst_mov},  //MOV
-    {"0b1110_0010_xxxx_xxxx", inst_add},  //ADD
-    {"0b1110_0011_xxxx_xxxx", inst_sub},  //SUB
-    {"0b1110_0100_xxxx_xxxx", inst_and},  //AND
-    {"0b1110_0101_xxxx_xxxx", inst_or},   //OR
-    {"0b1110_0110_xxxx_xxxx", inst_xor},  //XOR
-    {"0b1110_1001_xxxx_xxxx", inst_lsl},  //LSL
-    {"0b1110_1010_xxxx_xxxx", inst_lsr},  //LSR
-    {"0b1110_1101_xxxx_xxxx", inst_asr},  //ASR
-    {"0b1100_0011_xxxx_xxxx", inst_cmp},  //CMP
-    {"0b0111_1000_xxxx_xxxx", inst_li},   //LI
-    {"0b1111_0010_xxxx_xxxx", inst_addi}, //ADDI
-    {"0b1101_0011_xxxx_xxxx", inst_cmpi}, //CMPI
-    {"0b0101_0010_0000_0000", inst_j},    //J
-    {"0b0111_0011_0000_0000", inst_jal},  //JAL
-    {"0b0110_0001_xxxx_0000", inst_jalr}, //JALR
-    {"0b0100_0000_xxxx_0000", inst_jr},   //JR
-    {"0b0100_0100_0xxx_xxxx", inst_jl},   //JL
-    {"0b0100_0100_1xxx_xxxx", inst_jle},  //JLE
-    {"0b0100_0101_0xxx_xxxx", inst_je},   //JE
-    {"0b0100_0101_1xxx_xxxx", inst_jne},  //JNE
-    {"0b0100_0110_0xxx_xxxx", inst_jb},   //JB
-    {"0b0100_0110_1xxx_xxxx", inst_jbe},  //JBE
-    {"0b0000_0000_0000_0000", inst_nop},  //NOP
-
-#endif
+const struct inst_data inst_list[] = {	
+    {"0txxxxxxxxx_xxxx_xxxx", inst_lb},		//LB
+    {"0txxxxxxxxx_xxxx_xxxx", inst_lh},		//LH
+    {"0txxxxxxxxx_xxxx_xxxx", inst_lw},		//LW
+    {"0txxxxxxxxx_xxxx_xxxx", inst_lbu},	//LBU
+    {"0txxxxxxxxx_xxxx_xxxx", inst_lhu},	//LHU
+    {"0txxxxxxxxx_xxxx_xxxx", inst_addi},   //ADDI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_slli},   //SLLI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_slti},   //SLTI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sltiu},  //SLTIU
+    {"0txxxxxxxxx_xxxx_xxxx", inst_xori},   //XORI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_srli},   //SRLI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_srai},   //SRAI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_ori},    //ORI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_andi},   //ANDI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_auipc},  //AUIPC
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sb},     //SB
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sh},     //SH
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sw},     //SW
+    {"0txxxxxxxxx_xxxx_xxxx", inst_add},    //ADD
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sub},    //SUB
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sll},    //SLL
+    {"0txxxxxxxxx_xxxx_xxxx", inst_slt},    //SLT
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sltu},   //SLTU
+    {"0txxxxxxxxx_xxxx_xxxx", inst_xor},    //XOR
+    {"0txxxxxxxxx_xxxx_xxxx", inst_srl},    //SRL
+    {"0txxxxxxxxx_xxxx_xxxx", inst_sra},    //SRA
+    {"0txxxxxxxxx_xxxx_xxxx", inst_or},     //OR
+    {"0txxxxxxxxx_xxxx_xxxx", inst_and},    //AND
+    {"0txxxxxxxxx_xxxx_xxxx", inst_lui},    //LUI
+    {"0txxxxxxxxx_xxxx_xxxx", inst_beq},    //BEQ
+    {"0txxxxxxxxx_xxxx_xxxx", inst_bne},    //BNE
+    {"0txxxxxxxxx_xxxx_xxxx", inst_blt},    //BLT
+    {"0txxxxxxxxx_xxxx_xxxx", inst_bge},    //BGE
+    {"0txxxxxxxxx_xxxx_xxxx", inst_bltu},   //BLTU
+    {"0txxxxxxxxx_xxxx_xxxx", inst_bgeu},   //BGEU
+    {"0txxxxxxxxx_xxxx_xxxx", inst_jalr},   //JALR
+    {"0txxxxxxxxx_xxxx_xxxx", inst_jal},    //JAL        
     {NULL, NULL} //Terminator
 };
-

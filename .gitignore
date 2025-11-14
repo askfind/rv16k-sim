@@ -1,10 +1,16 @@
-main
-asm.sh
-test.s
+# Created by https://www.toptal.com/developers/gitignore/api/c
+# Edit at https://www.toptal.com/developers/gitignore?templates=c
+
+### Cataloge ###
+.edu
+.docs
+
+### C ###
 # Prerequisites
 *.d
 
 # Object files
+.main
 *.o
 *.ko
 *.obj
@@ -53,3 +59,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# End of https://www.toptal.com/developers/gitignore/api/c
+

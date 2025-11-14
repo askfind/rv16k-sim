@@ -15,11 +15,10 @@ struct inst_data {
 
 extern const struct inst_data inst_list[];
 
+/* Бинарные */
 uint16_t pc_read(struct cpu_trit *c);
 uint16_t reg_read(struct cpu_trit *c, uint8_t reg_idx);
 uint16_t rom_read_w(struct cpu_trit *c);
 
-//viv+ dbg
-void pc_update(struct cpu_trit *c, uint16_t offset);
 
-#endif
+#endif  /* INST_H */

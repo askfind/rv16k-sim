@@ -1,15 +1,33 @@
-# TRIT-RV16K-SIM
-TRIT RV16K Functional Simulator
+## Functional Simulator RISC-V, TRIT-RISC-V
+
+
+# RISC-V RV32E/RV32I
+# TRIT-RISC-V TRV32E/TRV32I
+
 
 # How to use
+
 ## Build
 ```
 make
 ```
-## Test Instruction RV16K
+
+## Clean
+```
+make clean
+```
+
+
+## Test RISC-V Instruction RV32E/RV32I
 ```
 make test
 ```
+
+## Test TRIT-RISC-V Instruction TRV32E/TRV32I
+```
+make test_trit
+```
+
 
 ## Use
 ```
@@ -19,7 +37,7 @@ Options:
   -m       : Dump memory
   -t ROM   : Initial ROM data
   -d RAM   : Initial RAM data
-  -a       : TRIT-RV16K
+  -a       : Set cpu trits
   FILENAME : ELF Binary
 ```
 
