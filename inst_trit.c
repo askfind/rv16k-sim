@@ -17,62 +17,61 @@ int flag_inst_trits = 1;
  * 
  */
 
-void trs_pc_update(struct cpu_trit *c, tr16 offset) {	
+void trs_pc_update(struct cpu_trit *c, tr32 offset) {	
     c->pc = add_trs(c->pc, offset);
-	uint8_t nine_str[8] = {'0'};
-	tr16_to_nine_string(nine_str,c->pc);
+	uint8_t nine_str[16] = {'0'};
+	tr32_to_nine_string(nine_str,c->pc);
 	log_printf("PC => t%s\n\r", nine_str);
 }
 
-void trs_pc_write(struct cpu_trit *c, tr16 addr) {	
-	for(int i=0;i<TRIT16_SIZE;i++) {
+void trs_pc_write(struct cpu_trit *c, tr32 addr) {	
+	for(int i=0;i<TRIT32_SIZE;i++) {
 		c->pc.t[i] = addr.t[i];
 	}
 }
 
-tr16 trs_pc_read(struct cpu_trit *c) {
-	tr16 r;	
-	for(int i=0;i<TRIT16_SIZE;i++) {
+tr32 trs_pc_read(struct cpu_trit *c) {
+	tr32 r;	
+	for(int i=0;i<TRIT32_SIZE;i++) {
 		r.t[i] = c->pc.t[i];
 	}
 	return r;
 }
 
-void trs_reg_write(struct cpu_trit *c, uint8_t reg_idx, tr16 data){
-    uint8_t nine_str[8] = {'0'};
+void trs_reg_write(struct cpu_trit *c, uint8_t reg_idx, tr32 data){
+    uint8_t nine_str[16] = {'0'};    
     if( reg_idx > REGISTER_SIZE-1 ) {
 		log_printf("Error: Reg t%d : Error reg_idx\n\r",reg_idx);
 		assert(reg_idx > REGISTER_SIZE-1 && "Reg write from invalid index!");    		
 		return; /* Error index. */
 	}
-    for(int i=0;i<TRIT16_SIZE;i++) {
+    for(int i=0;i<TRIT32_SIZE;i++) {
 		c->reg[reg_idx].t[i] = data.t[i];
 	}
-	tr16_to_nine_string(nine_str,c->reg[reg_idx]);
+	tr32_to_nine_string(nine_str,c->reg[reg_idx]);
     log_printf("Reg t%d => t%s\n\r",reg_idx,nine_str);
     return; /* Ok */
 }
 
-void trs_reg_read(struct cpu_trit *c, uint8_t reg_idx, tr16 * tr ){
-
-    uint8_t nine_str[8] = {'0'};
+void trs_reg_read(struct cpu_trit *c, uint8_t reg_idx, tr32 * tr ){
+    uint8_t nine_str[16] = {'0'};
     if( reg_idx > REGISTER_SIZE-1 ) {
 		log_printf("Error: Reg t%d : Error reg_idx\n\r",reg_idx);
 		assert(reg_idx > REGISTER_SIZE-1 && "Error: Reg read from invalid index!"); 		
 		return;
 	}
-    for(int i=0;i<TRIT16_SIZE;i++) {
+    for(int i=0;i<TRIT32_SIZE;i++) {
 		tr->t[i] = c->reg[reg_idx].t[i];
 	}    
-	tr16_to_nine_string(nine_str,*tr);
+	tr32_to_nine_string(nine_str,*tr);
     log_printf("Reg t%d => t%s\n\r",reg_idx,nine_str);
     return; /*Ok */
 }
 
-void trs_rom_read_w(struct cpu_trit *c, tr16 *tr){
+void trs_rom_read_w(struct cpu_trit *c, tr32 *tr){
     
-    int32_t pc;        
-    pc = tr16_to_int32(c->pc);    	
+    int64_t pc;        
+    pc = tr32_to_int64(c->pc);    	
 	
     if( abs(pc) > (INST_ROM_SIZE/2 - 1) ) {
 		log_printf("Error: ROM read from invalid address!\n\r");
@@ -80,19 +79,19 @@ void trs_rom_read_w(struct cpu_trit *c, tr16 *tr){
 		return; /* Error index. */
 	}
 
-    for(int i=0;i<TRIT8_SIZE;i++) {		
+    for(int i=0;i<TRIT16_SIZE;i++) {		
 		tr->t[i] = c->inst_rom[pc].t[i]; // low
 	}    
-    for(int i=0;i<TRIT8_SIZE;i++) {		
+    for(int i=0;i<TRIT16_SIZE;i++) {		
 		tr->t[i+TRIT8_SIZE] = c->inst_rom[pc+1].t[i]; // high;
 	}     
 	
     return; /* Ok */
 }
 
-void trs_mem_write_b(struct cpu_trit *c, tr16 addr, tr8 data) {
-    int32_t pc;        
-    pc = tr16_to_int32(c->pc);    	
+void trs_mem_write_b(struct cpu_trit *c, tr32 addr, tr16 data) {
+    int64_t pc;        
+    pc = tr32_to_int64(c->pc);    	
 	
     if( abs(pc) > (DATA_RAM_SIZE/2 - 1) ) {
 		log_printf("Error: RAM write tr8 from invalid address!\n\r");
@@ -100,7 +99,7 @@ void trs_mem_write_b(struct cpu_trit *c, tr16 addr, tr8 data) {
 		return;
 	}
 
-    for(int i=0;i<TRIT8_SIZE;i++) {		
+    for(int i=0;i<TRIT16_SIZE;i++) {		
 		c->data_ram[pc].t[i] = data.t[i];
 	}    
 	
@@ -108,10 +107,10 @@ void trs_mem_write_b(struct cpu_trit *c, tr16 addr, tr8 data) {
 
 }
 
-void trs_mem_write_w(struct cpu_trit *c, tr16 addr, tr16 data) {
+void trs_mem_write_w(struct cpu_trit *c, tr32 addr, tr32 data) {
     
-    int32_t pc;        
-    pc = tr16_to_int32(c->pc);    	
+    int64_t pc;        
+    pc = tr32_to_int64(c->pc);    	
 	
     if( abs(pc) > (DATA_RAM_SIZE/2 - 1) ) {
 		log_printf("Error: RAM read tr16 from invalid address!\n\r");
@@ -119,19 +118,19 @@ void trs_mem_write_w(struct cpu_trit *c, tr16 addr, tr16 data) {
 		return;
 	}
 
-    for(int i=0;i<TRIT8_SIZE;i++) {		
+    for(int i=0;i<TRIT16_SIZE;i++) {		
 		c->data_ram[pc].t[i] = data.t[i]; // low
 	}    
-    for(int i=0;i<TRIT8_SIZE;i++) {		
-		c->data_ram[pc+1].t[i] = data.t[i+TRIT8_SIZE]; // high;
+    for(int i=0;i<TRIT16_SIZE;i++) {		
+		c->data_ram[pc+1].t[i] = data.t[i+TRIT16_SIZE]; // high;
 	}     
 	
     return; /* Ok */
 }
 
-void trs_mem_read_b(struct cpu_trit *c, tr16 addr, tr8 *tr) {
-    int32_t pc;        
-    pc = tr16_to_int32(c->pc);    	
+void trs_mem_read_b(struct cpu_trit *c, tr32 addr, tr16 *tr) {
+    int64_t pc;        
+    pc = tr32_to_int64(c->pc);    	
 	
     if( abs(pc) > (DATA_RAM_SIZE/2 - 1) ) {
 		log_printf("Error: RAM read from invalid address!\n\r");
@@ -139,17 +138,17 @@ void trs_mem_read_b(struct cpu_trit *c, tr16 addr, tr8 *tr) {
 		return;
 	}
 
-    for(int i=0;i<TRIT8_SIZE;i++) {		
+    for(int i=0;i<TRIT16_SIZE;i++) {		
 		tr->t[i] = c->data_ram[pc].t[i];
 	}    
 	
     return; /* Ok */
 }
 
-void trs_mem_read_w(struct cpu_trit *c, tr16 addr, tr16 *tr) {
+void trs_mem_read_w(struct cpu_trit *c, tr32 addr, tr32 *tr) {
     
-    int32_t pc;        
-    pc = tr16_to_int32(c->pc);    	
+    int64_t pc;        
+    pc = tr32_to_int64(c->pc);    	
 	
     if( abs(pc) > (DATA_RAM_SIZE/2 - 1) ) {
 		log_printf("Error: RAM read tr16 from invalid address!\n\r");
@@ -157,11 +156,11 @@ void trs_mem_read_w(struct cpu_trit *c, tr16 addr, tr16 *tr) {
 		return;
 	}
 
-    for(int i=0;i<TRIT8_SIZE;i++) {		
+    for(int i=0;i<TRIT16_SIZE;i++) {		
 		tr->t[i] = c->data_ram[pc].t[i]; // low
 	}    
-    for(int i=0;i<TRIT8_SIZE;i++) {		
-		tr->t[i+TRIT8_SIZE] = c->data_ram[pc+1].t[i]; // high;
+    for(int i=0;i<TRIT16_SIZE;i++) {		
+		tr->t[i+TRIT16_SIZE] = c->data_ram[pc+1].t[i]; // high;
 	}     
 	
     return; /* Ok */
@@ -171,37 +170,37 @@ void trs_mem_read_w(struct cpu_trit *c, tr16 addr, tr16 *tr) {
 // 27.10.2025  
 // 13.11.2025
 
-int32_t trs_get_trits(tr16 tr, int s, int e) {
+int64_t trs_get_trits(tr32 tr, int s, int e) {
 	
     trit t;
-    int32_t r = 0;    	
+    int64_t r = 0;    	
 
-    if( s<0 || s>15 || e<0 || e>15 || s>e ) {
+    if( s<0 || s>31 || e<0 || e>31 || s>e ) {
 		log_printf("Error: Get trits s or e from invalid position!\n\r");
-		assert( s<0 || s>15 || e<0 || e>15 || s>e  && "Get trits s or e from invalid position!");    
+		assert( s<0 || s>31 || e<0 || e>31 || s>e  && "Get trits s or e from invalid position!");    
 		return;
 	}	
 	
 	for (int i=s; i<=e; i++)
 	{	
-		t = get_trit(tr, i);	
+		t = get_trit32(tr, i);	
 		r += 3^i * (int)t;
 	}    
 
     return r;		
 }
 
-void trs_sign_ext(tr16 tr, uint8_t sign_bit, tr16 *ret) {
+void trs_sign_ext(tr32 tr, uint8_t sign_bit, tr32 *ret) {
 	
-    trit sign = get_trit(tr, sign_bit);
+    trit sign = get_trit32(tr, sign_bit);
     
-    if( sign_bit<0 || sign_bit>15 ) {
+    if( sign_bit<0 || sign_bit>31 ) {
 		log_printf("Error: Get trits s from invalid position!\n\r");
 		assert( sign_bit<0 || sign_bit>15 && "Get trits s from invalid position!");    
 		return;
 	}	
 	    
-    for(int i=sign_bit;i<16;i++){        
+    for(int i=sign_bit;i<31;i++){        
         ret->t[i] = sign;
     }
     return; /* Ok */    
@@ -209,7 +208,7 @@ void trs_sign_ext(tr16 tr, uint8_t sign_bit, tr16 *ret) {
 
 trit trs_flag_zero(tr16 res) {
 	
-	if ( tr16_to_int32(res) == 0 ) {
+	if ( tr32_to_int64(res) == 0 ) {
 		return +1;
 	}
 	else {
@@ -217,10 +216,10 @@ trit trs_flag_zero(tr16 res) {
 	}
 }
 
-trit trs_flag_sign(tr16 res) {
+trit trs_flag_sign(tr32 res) {
     trit sng = 0;
-    for(int i=0;i<TRIT16_SIZE;i++){        
-         trit sng = get_trit(res,i);
+    for(int i=0;i<TRIT32_SIZE;i++){        
+         trit sng = get_trit32(res,i);
          if( sng != 0 ) {
 			return sng;
 		 }
@@ -228,12 +227,12 @@ trit trs_flag_sign(tr16 res) {
 	return sng;
 }
 
-trit trs_flag_overflow(tr16 s1, tr16 s2, tr16 res) {
+trit trs_flag_overflow(tr32 s1, tr32 s2, tr32 res) {
 	
 	//viv- old code
-	trit s1_sign = get_trit(s1, 15);
-    trit s2_sign = get_trit(s2, 15);
-    trit res_sign = get_trit(res, 15);
+	trit s1_sign = get_trit32(s1, 31);
+    trit s2_sign = get_trit32(s2, 31);
+    trit res_sign = get_trit32(res, 31);
     
     // Какое условие переполнения для тритов? 
     //return ((s1_sign^s2_sign) == 0)&((s2_sign^res_sign) == 1);    
@@ -447,61 +446,89 @@ const struct inst_data trs_inst_list[] = {
 /* Отладка троичных операций */
 void trs_dbg_oper(struct cpu_trit *c) {	
 	
-	uint8_t buf[8];
-	tr16 tr;
-	tr16 tr1;
-	tr16 tr2;
-	tr16 tr3;	
+	static uint8_t buf8[8] = {0};
+	static uint8_t buf16[16] = {0};
+	
+	tr32 tr;
+	tr32 tr1;
+	tr32 tr2;
+	tr32 tr3;	
 	tr8 t8_1;
 	tr16 t16_1;	
-	tr16 offset; 
-	tr16 addr;	
+	tr32 t32_1;	
+	tr32 offset; 
+	tr32 addr;	
 	 
 	printf("[ Отладка троичных операций TRIT RISC-V ]\n\r");
 	
-	printf("\n\r t000: tlog(...)\n\r");
-	clear_tr16(&tr);	
+	printf("\n\r t000: tlog32(...)\n\r");
+	clear_tr32(&tr);	
 	tr.t[1] = 1;
 	tr.t[0] = 1;	
-	tlog("++ -> ", tr);
+	tlog32("++ -> ", tr);
 	tr.t[1] = -1;
 	tr.t[0] = -1;	
-	tlog("-- -> ", tr);
+	tlog32("-- -> ", tr);
 
 	printf("\n\r t001: symb_nine_form(...)\n\r");
-	tr.t[1] = 1;
-	tr.t[0] = 1;	
-	printf("++ -> %c\n\r",symb_nine_form(tr));
-	tr.t[1] = 0;
-	tr.t[0] = 0;	
-	printf("00 -> %c\n\r",symb_nine_form(tr));
-	tr.t[1] = -1;
-	tr.t[0] = -1;	
-	printf("-- -> %c\n\r",symb_nine_form(tr));
+	t16_1.t[1] = 1;
+	t16_1.t[0] = 1;	
+	printf("++ -> %c\n\r",symb_nine_form(t16_1));
+	t16_1.t[1] = 0;
+	t16_1.t[0] = 0;	
+	printf("00 -> %c\n\r",symb_nine_form(t16_1));
+	t16_1.t[1] = -1;
+	t16_1.t[0] = -1;	
+	printf("-- -> %c\n\r",symb_nine_form(t16_1));
 
-	printf("\n\r t002: tr16_to_nine_string(...)\n\r");	
-	tr.t[15] = -1;
-	tr.t[14] =  0;
-	tr.t[13] = +1;
-	tr.t[12] = -1;
-	tr.t[11] =  0;
-	tr.t[10] = +1;
-	tr.t[9] = -1;
-	tr.t[8] =  0;
-	tr.t[7] = +1;
-	tr.t[6] = -1;
-	tr.t[5] =  0;
-	tr.t[4] = +1;
-	tr.t[3] = -1;
-	tr.t[2] =  0;
-	tr.t[1] = +1;
-	tr.t[0] =  0;
-	tr16_to_nine_string(buf,tr);	 
-	printf("tr16 -> %s\n\r",buf);
+	printf("\n\r t002: tr16_to_nine_string(...), tr32_to_nine_string(...)\n\r");	
+	clear_tr16(&t16_1);	
+	t16_1.t[15] = -1;
+	t16_1.t[14] =  0;
+	t16_1.t[13] = +1;
+	t16_1.t[12] = -1;
+	t16_1.t[11] =  0;
+	t16_1.t[10] = +1;
+	t16_1.t[9] = -1;
+	t16_1.t[8] =  0;
+	t16_1.t[7] = +1;
+	t16_1.t[6] = -1;
+	t16_1.t[5] =  0;
+	t16_1.t[4] = +1;
+	t16_1.t[3] = -1;
+	t16_1.t[2] =  0;
+	t16_1.t[1] = +1;
+	t16_1.t[0] =  0;
+	tr16_to_nine_string(buf8,t16_1);	 
+	printf("t16 -> ");
+	buflog8(buf8);
+	printf("\n\r");
+	
+	clear_tr32(&t32_1);	
+	t32_1.t[31] = +1;
+	t32_1.t[30] =  0;
+	t32_1.t[29] = -1;
+	t32_1.t[28] = +1;
+	t32_1.t[27] =  0;
+	t32_1.t[26] = -1;
+	t32_1.t[25] = +1;
+	t32_1.t[24] =  0;
+	t32_1.t[23] = -1;
+	t32_1.t[22] = +1;
+	t32_1.t[21] =  0;
+	t32_1.t[4] = -1;
+	t32_1.t[3] = +1;
+	t32_1.t[2] =  0;
+	t32_1.t[1] = -1;
+	t32_1.t[0] =  0;
+	tr32_to_nine_string(buf16,t32_1);	 	
+	printf("t32 -> ");
+	buflog16(buf16);
+	printf("\n\r");
 	
 	printf("\n\r t003: trs_pc_update(...)\n\r");
-	clear_tr16(&c->pc);
-	clear_tr16(&offset);
+	clear_tr32(&c->pc);
+	clear_tr32(&offset);
 	offset.t[0] = 0;
 	trs_pc_update(&c->pc, offset);
 	offset.t[0] = 1;
@@ -515,82 +542,82 @@ void trs_dbg_oper(struct cpu_trit *c) {
 	trs_pc_update(&c->pc, offset);	
 	
 	printf("\n\r t004: trs_pc_write(...), trs_pc_read(...) \n\r");
-	clear_tr16(&tr1);
-	tlog("tr =",tr);
-	trs_pc_write(&c->pc, tr);
-	tr1 = trs_pc_read(&c->pc);
-	tlog("tr1=",tr1);
+	clear_tr32(&t32_1);
+	tlog32("t32_1 =",t32_1);
+	trs_pc_write(&c->pc, t32_1);
+	t32_1 = trs_pc_read(&c->pc);
+	tlog32("t32_1=",t32_1);
 	
 	printf("\n\r t005: trs_reg_write(...) \n\r");
-	clear_tr16(&tr1);
-	tr1.t[2] = +1;
-	tr1.t[1] =  0;
-	tr1.t[0] = -1;	
-	tlog("tr1 =",tr1);
+	clear_tr32(&t32_1);
+	t32_1.t[2] = +1;
+	t32_1.t[1] =  0;
+	t32_1.t[0] = -1;	
+	tlog32("t32_1 =",t32_1);
 	uint8_t reg_idx = 7;
 	trs_reg_write(c,reg_idx,tr1);	
 	reg_idx = 21;
 	trs_reg_write(c,reg_idx,tr1);	
 	
 	printf("\n\r t006: trs_reg_read(...) \n\r");
-	clear_tr16(&tr1);
+	clear_tr32(&t32_1);
 	reg_idx = 7;	
-	tlog("1. tr1 =",tr1);
-	trs_reg_read(c, reg_idx, &tr1);
-	tlog("2. tr1 =",tr1);
+	tlog32("1. t32_1 =",t32_1);
+	trs_reg_read(c, reg_idx, &t32_1);
+	tlog32("2. t32_1 =",t32_1);
 	
 	printf("\n\r t007: trs_rom_read_w(...) \n\r");	
-	clear_tr16(&c->pc);
-	clear_tr16(&tr1);
-	clear_tr16(&offset);
+	clear_tr32(&c->pc);
+	clear_tr32(&t32_1);
+	clear_tr32(&offset);
 
 	offset.t[0] = +1;
 	trs_pc_update(&c->pc, offset);
 		
-	tr1.t[2] = +1;
-	tr1.t[1] =  0;
-	tr1.t[0] = -1;	
-	tlog("1. t pc =",c->pc);	
-	tlog("2. t tr1 =",tr1);	
-	trs_rom_read_w(c, &tr1);
-	tlog("3. t pc =",c->pc);
-	tlog("4. t tr1=", tr1);
+	t32_1.t[2] = +1;
+	t32_1.t[1] =  0;
+	t32_1.t[0] = -1;	
+	tlog32("1. t pc =",c->pc);	
+	tlog32("2. t t32_1 =",t32_1);	
+	trs_rom_read_w(c, &t32_1);
+	tlog32("3. t pc =",c->pc);
+	tlog32("4. t tr1=", t32_1);
 	
 	printf("\n\r t008: trs_mem_write_b(...), trs_mem_read_b(...) \n\r");	
-	clear_tr8(&t8_1);
-	clear_tr16(&addr);
-
-	addr.t[2] = +1; 
-	addr.t[1] = -1;
-	addr.t[0] =  0;		
-
-	t8_1.t[7] = -1; 
-	t8_1.t[1] = +1;
-	t8_1.t[0] =  0;		
-	
-	tlog8("t8_1 = ",t8_1);
-	trs_mem_write_b(c, addr, t8_1);
-	clear_tr8(&t8_1);	
-	trs_mem_read_b(c, addr, &t8_1); 
-	tlog8("t8_1 = ",t8_1);
-
-	printf("\n\r t009: trs_rom_read_w(...) \n\r");	
 	clear_tr16(&t16_1);
-	clear_tr16(&addr);
+	clear_tr32(&addr);
 
 	addr.t[2] = +1; 
 	addr.t[1] = -1;
 	addr.t[0] =  0;		
 
-	t16_1.t[15] = -1; 
+	t16_1.t[7] = -1; 
 	t16_1.t[1] = +1;
 	t16_1.t[0] =  0;		
 	
-	tlog("t16_1 = ",t16_1);
-	trs_mem_write_w(c, addr, t16_1);
+	tlog16("t16_1 = ",t16_1);
+	trs_mem_write_b(c, addr, t16_1);
 	clear_tr16(&t16_1);	
-	trs_mem_read_w(c, addr, &t16_1); 
-	tlog("t16_1 = ",t16_1);
+	trs_mem_read_b(c, addr, &t16_1); 
+	tlog16("t16_1 = ",t16_1);
+
+	printf("\n\r t009: trs_rom_read_w(...) \n\r");	
+	clear_tr32(&t32_1);
+	clear_tr32(&addr);
+
+	addr.t[2] = +1; 
+	addr.t[1] = -1;
+	addr.t[0] =  0;		
+
+	t32_1.t[15] = -1; 
+	t32_1.t[1] = +1;
+	t32_1.t[0] =  0;		
+	
+	tlog32("t32_1 = ",t32_1);
+	trs_mem_write_w(c, addr, t32_1);
+	clear_tr32(&t32_1);	
+	trs_mem_read_w(c, addr, &t32_1); 
+	tlog32("t32_1 = ",t32_1);
 
 	
 	printf("\n\r [ END Tests. ]\n\r");

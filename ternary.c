@@ -119,7 +119,7 @@ int32_t tr16_to_int32(tr16 tr)
 	
 	for (int i = 0; i < TRIT16_SIZE ; i++)
 	{
-		trit x = get_trit(tr, i);
+		trit x = get_trit16(tr, i);
 		if (x != 0)
 		{
 			n += pow3(i) * x;
@@ -128,6 +128,23 @@ int32_t tr16_to_int32(tr16 tr)
 
 	return n;
 }  
+
+int64_t tr32_to_int64(tr32 tr)
+{
+	int32_t n = 0; 	
+	
+	for (int i = 0; i < TRIT32_SIZE ; i++)
+	{
+		trit x = get_trit32(tr, i);
+		if (x != 0)
+		{
+			n += pow3(i) * x;
+		}
+	}
+
+	return n;
+}  
+
 
 
 /*
@@ -150,7 +167,7 @@ uint8_t signch(int x) {
 /* 
  * Получить целое со знаком трита в позиции троичного числа
  */
-trit get_trit(tr16 tr, uint8_t pos)
+trit get_trit16(tr16 tr, uint8_t pos)
 {
 	trit r;	
 	
@@ -164,10 +181,24 @@ trit get_trit(tr16 tr, uint8_t pos)
 	return r;
 } 
 
+trit get_trit32(tr32 tr, uint8_t pos)
+{
+	trit r;	
+	
+	if( pos > TRIT32_SIZE-1) {				
+		r = 0;		
+	}
+	else {		
+		r = sign(tr.t[pos]);
+	}	
+
+	return r;
+} 
+
 /*
  * Установить значение трита в троичном числе.
  */
-tr16 set_trit(tr16 tr, uint8_t pos, trit t)
+tr16 set_trit16(tr16 tr, uint8_t pos, trit t)
 {
 	uint8_t p;
 	tr16 res;
@@ -183,11 +214,26 @@ tr16 set_trit(tr16 tr, uint8_t pos, trit t)
 	return res;
 }
 
+tr32 set_trit32(tr32 tr, uint8_t pos, trit t)
+{
+	uint8_t p;
+	tr32 res = {0};
+	
+	if( pos > TRIT32_SIZE-1) {				
+		res = tr;
+	}
+	else {
+		res = tr;
+		res.t[pos] = t;	
+	}
+	
+	return res;
+}
 
 uint8_t symb_nine_form(tr16 v) {
 	
-	trit t1 = v.t[1];
-	trit t0 = v.t[0];
+	trit t1 = sign(v.t[1]);
+	trit t0 = sign(v.t[0]);
 	
 	switch (3*t1 + t0) {
 		case +4: return '4';
@@ -198,23 +244,34 @@ uint8_t symb_nine_form(tr16 v) {
 		case -1: return 'Z';
 		case -2: return 'Y';
 		case -3: return 'X';
-		case -4: return 'W';	
+		case -4: return 'W';
+		default: return ' '; 	
 	}
 }
 
 void tr16_to_nine_string(uint8_t * buf,tr16 v) {
 	
-	uint8_t index = 0;
-	
+	uint8_t index = 0;	
 	tr16 t;	
 
 	for(int i=0;i<8;i++) {
-		t.t[0] = get_trit(v,index++);
-		t.t[1] = get_trit(v,index++);
-		buf[7-i] = symb_nine_form(t);
+		t.t[0] = get_trit16(v,index++);
+		t.t[1] = get_trit16(v,index++);
+		buf[i] = symb_nine_form(t);
 	}	
 }
 
+void tr32_to_nine_string(uint8_t *buf, tr32 v) {
+	
+	uint8_t index = 0;	
+	tr16 t;	
+
+	for(int i=0;i<16;i++) {
+		t.t[0] = get_trit32(v,index++);
+		t.t[1] = get_trit32(v,index++);
+		buf[15-i] = symb_nine_form(t);		
+	}	
+}
  
 /*
  * Очистить поле битов троичного числа
@@ -229,6 +286,13 @@ void clear_tr8(tr8 *tr)
 void clear_tr16(tr16 *tr)
 {
 	for(int i=0; i<TRIT16_SIZE; i++) {
+		tr->t[i] = 0;
+	}
+}  
+
+void clear_tr32(tr32 *tr)
+{
+	for(int i=0; i<TRIT32_SIZE; i++) {
 		tr->t[i] = 0;
 	}
 }  
@@ -455,24 +519,24 @@ void or_t(trit *a, trit *b, trit *s)
  * Троичное ADD сложение тритов
  */
 //TODO info RISC-V bits
-tr16 add_trs(tr16 x, tr16 y)
+tr32 add_trs(tr32 x, tr32 y)
 {
 	int8_t i, j;
 	trit a, b, s, p0, p1;
-	tr16 r;
+	tr32 r;
 
 	/* Результат */
 	uint8_t m = 0;
 
-	j = TRIT16_SIZE;
+	j = TRIT32_SIZE;
 
 	p0 = 0;
 	p1 = 0;
 
 	for (i = 0; i < j; i++)
 	{
-		a = get_trit(x, i);
-		b = get_trit(y, i);
+		a = get_trit32(x, i);
+		b = get_trit32(y, i);
 		sum_t(&a, &b, &p0, &s, &p1);
 
 		if (s > 0)
@@ -498,24 +562,22 @@ tr16 add_trs(tr16 x, tr16 y)
 /* 
  * Троичное вычитание тритов
  */
-tr16 sub_trs(tr16 x, tr16 y)
+tr32 sub_trs(tr32 x, tr32 y)
 {
 	uint8_t i, j;
 	trit a, b, s, p0, p1;
-	tr16 r;
-
-	/* Результат для Сетунь-1958 R,S */
+	tr32 r;
+	
 	uint8_t m = 0;
-
-	j = TRIT16_SIZE;
+	j = TRIT32_SIZE;
 
 	p0 = 0;
 	p1 = 0;
 
 	for (i = 0; i < j; i++)
 	{
-		a = get_trit(x, i);
-		b = get_trit(y, i);
+		a = get_trit32(x, i);
+		b = get_trit32(y, i);
 		b = -b;
 		sum_t(&a, &b, &p0, &s, &p1);
 
@@ -542,20 +604,20 @@ tr16 sub_trs(tr16 x, tr16 y)
 /*
  * Троичная операция OR тритов 
  */
-tr16 or_trs(tr16 x, tr16 y)
+tr32 or_trs(tr32 x, tr32 y)
 {
-	tr16 r;
+	tr32 r;
 	uint8_t i, j;
 	trit a, b, s;
 
-	j = TRIT16_SIZE;
+	j = TRIT32_SIZE;
 
 	for (i = 0; i < j; i++)
 	{
-		a = get_trit(x, i);
-		b = get_trit(y, i);
+		a = get_trit32(x, i);
+		b = get_trit32(y, i);
 		or_t(&a, &b, &s);
-		r = set_trit(x, i, s);
+		r = set_trit32(x, i, s);
 	}
     
 	return r;
@@ -565,21 +627,21 @@ tr16 or_trs(tr16 x, tr16 y)
 /* 
  * Операции AND троичная
  */
-tr16 and_trs(tr16 x, tr16 y)
+tr32 and_trs(tr32 x, tr32 y)
 {
-	tr16 r;
+	tr32 r;
 
 	uint8_t i, j;
 	trit a, b, s;
 
-	j = TRIT16_SIZE;
+	j = TRIT32_SIZE;
 
 	for (i = 0; i < j; i++)
 	{
-		a = get_trit(x, i);
-		b = get_trit(y, i);
+		a = get_trit32(x, i);
+		b = get_trit32(y, i);
 		and_t(&a, &b, &s);
-		r = set_trit(x, i, s);
+		r = set_trit32(x, i, s);
 	}
 	
 	return r;
@@ -588,21 +650,21 @@ tr16 and_trs(tr16 x, tr16 y)
 /* 
  * Операции XOR trs
  */
-tr16 xor_trs(tr16 x, tr16 y)
+tr32 xor_trs(tr32 x, tr32 y)
 {
-	tr16 r;
+	tr32 r;
 
 	int8_t i, j, ll;
 	trit a, b, s;
 
-	j = TRIT16_SIZE;
+	j = TRIT32_SIZE;
 
 	for (i = 0; i < j; i++)
 	{
-		a = get_trit(x, i);
-		b = get_trit(y, i);
+		a = get_trit32(x, i);
+		b = get_trit32(y, i);
 		xor_t(&a, &b, &s);
-		r = set_trit(x, i, s);
+		r = set_trit32(x, i, s);
 	}
 	
 	return r;
@@ -611,17 +673,23 @@ tr16 xor_trs(tr16 x, tr16 y)
 /* 
  * Операция NOT троичная
  */
-tr16 not_trs(tr16 x)
-{
-	tr16 r = x;
-
+tr32 not_trs(tr32 x)
+{	
+	int8_t i,j;
+	tr32 r;
+	
+	j = TRIT32_SIZE;
+	for (i = 0; i < j; i++)
+	{
+		r.t[i] = -x.t[i];
+	}	
 	return r;
 }
 
 /* 
  * Троичное NEG отрицания тритов
  */
-tr16 neg_trs(tr16 t)
+tr32 neg_trs(tr32 t)
 {
 	return not_trs(t);
 }
@@ -631,9 +699,9 @@ tr16 neg_trs(tr16 t)
 #endif
 
 /*
- *  Печать при отладке
+ *  Печать при отладке бинарных данных
  */
-void vlog( unsigned char * buf, uint16_t v ) {
+void vlog16( unsigned char * buf, uint16_t v ) {
 		//log_printf("\n\r");
 		log_printf("( %s : ",buf);
    		log_printf("x%04x",v);
@@ -641,8 +709,16 @@ void vlog( unsigned char * buf, uint16_t v ) {
      	log_printf(" )\n\r");     	
 }
 
+void vlog32( unsigned char * buf, uint32_t v ) {
+		//log_printf("\n\r");
+		log_printf("( %s : ",buf);
+   		log_printf("0x%04x%04x",v>>16, v & 0xFFFF);   		
+   		log_printf(" [%d]",v);				
+     	log_printf(" )\n\r");     	
+}
+
 /* 
- * Печать при отладке
+ * Печать при отладке троичных данных
  */
 void tlog8( unsigned char * buf, tr8 ts ) {
 		log_printf("[ %s : t",buf);
@@ -651,12 +727,31 @@ void tlog8( unsigned char * buf, tr8 ts ) {
 		};
      	log_printf(" ]\n\r");
 }
-void tlog( unsigned char * buf, tr16 ts ) {
+void tlog16( unsigned char * buf, tr16 ts ) {
 		log_printf("[ %s : t",buf);
-   		for(int j=0;j<16;j++) { 
+   		for(int j=0;j<8;j++) { 
 			log_printf("%c",signch( ts.t[15-j]));
 		};
      	log_printf(" ]\n\r");
+}
+void tlog32( unsigned char * buf, tr32 ts ) {
+		log_printf("[ %s : t",buf);
+   		for(int j=0;j<16;j++) { 
+			log_printf("%c",signch( ts.t[31-j]));
+		};
+     	log_printf(" ]\n\r");
+}
+
+void buflog8( uint8_t * buf ) {		
+   		for(int j=0;j<8;j++) { 
+			printf("%c",buf[j]);
+		};     	
+}
+
+void buflog16( uint8_t * buf ) {		
+   		for(int j=0;j<16;j++) { 
+			printf("%c",buf[j]);
+		};     	
 }
 
 /* EOF ternary.c */
